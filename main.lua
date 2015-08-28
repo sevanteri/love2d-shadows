@@ -13,19 +13,6 @@ function love.load()
     objectCanvas = g.newCanvas(Wwidth, Wheight)
     objectCanvas :renderTo(function()
         g.setColor(50, 50, 50, 255)
-        --local w = 8 h = 8
-        --local pad = 40 s = 10
-        --local circlesSize = function(x) return (1 + x) * pad; end
-        --local xmargin = objectCanvas:getWidth()/2 - circlesSize(w)/2
-        --local ymargin = objectCanvas:getHeight()/2 - circlesSize(h)/2
-        --for i=1, w do
-            --for j=1, h do
-                --g.circle('fill',
-                         --xmargin + i * pad,
-                         --ymargin + j * pad,
-                         --s)
-            --end
-        --end
         g.rectangle('fill', Xcenter - 100, Ycenter - 100, 50, 50)
         g.rectangle('fill', Xcenter + 50, Ycenter + 50, 50, 50)
         g.rectangle('fill', Xcenter - 50, Ycenter + 50, 50, 50)
@@ -41,10 +28,6 @@ end
 
 function setcam()
     g.push()
-    --g.scale(
-        --shadowMapCanvas:getWidth() / Wwidth,
-        --shadowMapCanvas:getHeight() / Wheight
-    --)
     g.translate(
         -(light.x - light.size/2),
         -(light.y - light.size/2)
@@ -82,9 +65,9 @@ function love.draw(dt)
         )
     g.setShader()
 
-    setcam()
+    --setcam()
     g.draw(objectCanvas)
-    unsetcam()
+    --unsetcam()
 
 end
 
