@@ -1,9 +1,26 @@
-shadowMapShader = require('shadowMapShader')
-lightShader = require('lightShader')
+local camera = require('libs.hump.camera')
 
-light = {x = 256, y = 256, size = 512}
+local shadowMapShader = require('shadowMapShader')
+local lightShader = require('lightShader')
+
+local lightIndex = 1
+local lights = {
+    {
+        x = 256,
+        y = 256,
+        size = 512,
+        color = {255, 255, 255, 255}
+    },
+    {
+        x = 400,
+        y = 256,
+        size = 256,
+        color = {255, 0, 0, 200}
+    }
+}
 
 local g = love.graphics
+
 function love.load()
     love.window.setMode(512, 512)
     Wwidth, Wheight = love.window.getDimensions()
@@ -11,73 +28,89 @@ function love.load()
     g.setBackgroundColor(200, 200, 200)
 
     objectCanvas = g.newCanvas(Wwidth, Wheight)
-    objectCanvas :renderTo(function()
+    objectCanvas:renderTo(function()
         g.setColor(50, 50, 50, 255)
         g.rectangle('fill', Xcenter - 100, Ycenter - 100, 50, 50)
         g.rectangle('fill', Xcenter + 50, Ycenter + 50, 50, 50)
         g.rectangle('fill', Xcenter - 50, Ycenter + 50, 50, 50)
     end)
 
+    -- setup lights
+    for _, l in ipairs(lights) do
+        l.cam = camera.new(l.x, l.y, Wwidth / l.size)
+        l.occlusionCanvas = g.newCanvas(l.size, l.size, g.rgba8)
+        l.shadowMapCanvas = g.newCanvas(l.size, 1, g.rgba8)
+        l.shadowMapCanvas:setFilter('linear', 'linear')
+        l.shadowMapCanvas:setWrap('repeat', 'repeat')
+    end
 
-    shadowMapCanvas = g.newCanvas(light.size, 1, g.rgba8)
-    shadowMapCanvas:setFilter('linear', 'linear')
-    shadowMapCanvas:setWrap('repeat', 'repeat')
-    shadowMapShader:send('resolution', {light.size, light.size})
-    lightShader:send('resolution', {light.size, light.size})
-end
-
-function setcam()
-    g.push()
-    g.translate(
-        -(light.x - light.size/2),
-        -(light.y - light.size/2)
-    )
-end
-
-function unsetcam()
-    g.pop()
 end
 
 function love.draw(dt)
-    shadowMapCanvas:clear(255, 255, 255, 255)
+    for i, l in ipairs(lights) do
+        l.occlusionCanvas:clear()
+        l.occlusionCanvas:renderTo(function()
+            l.cam:draw(function()
+                local xr = l.occlusionCanvas:getWidth() / objectCanvas:getWidth()
+                local yr = l.occlusionCanvas:getHeight() / objectCanvas:getHeight()
+                g.draw(
+                    objectCanvas,
+                    (1 - xr) * (l.x - l.size/2),
+                    (1 - yr) * (l.y - l.size/2),
+                    0,
+                    xr,
+                    yr
+                )
+            end)
+        end)
 
-    shadowMapCanvas:renderTo(function()
-        g.setShader(shadowMapShader)
-            setcam()
-            g.draw(objectCanvas)
-            unsetcam()
+        l.shadowMapCanvas:clear()
+        l.shadowMapCanvas:renderTo(function()
+            g.setShader(shadowMapShader)
+            shadowMapShader:send('resolution', {l.size, l.size})
+            g.draw(l.occlusionCanvas)
+            g.setShader()
+        end)
+        g.setColor(255,255,255)
+        g.draw(l.shadowMapCanvas, 0, 5 + i)
 
-        g.setShader()
-    end)
-    g.draw(shadowMapCanvas, 0, 5)
-
-    g.setShader(lightShader)
-        g.setColor(255, 255, 255, 255)
+        g.setShader(lightShader)
+        lightShader:send('resolution', {l.size, l.size})
+        g.setColor(l.color)
         g.draw(
-            shadowMapCanvas,
-            light.x,
-            light.y,
+            l.shadowMapCanvas,
+            l.x,
+            l.y,
             0, --rot
             1,
-            -light.size,
-            shadowMapCanvas:getWidth()/2,
-            shadowMapCanvas:getHeight()/2
+            -l.size,
+            l.size/2,
+            0.5
         )
-    g.setShader()
+        g.setShader()
 
-    --setcam()
+    end
+    g.setColor(50,50,50)
     g.draw(objectCanvas)
-    --unsetcam()
 
+    --lights[lightIndex].cam:draw(function() g.draw(objectCanvas) end)
 end
 
+isDown = love.keyboard.isDown
 function love.update(dt)
-    if love.keyboard.isDown('escape') then
+    if isDown('1') then
+        lightIndex = 1
+    elseif isDown('2') then
+        lightIndex = 2
+    end
+
+    if isDown('escape') then
         love.event.push('quit')
     end
 end
 
 function love.mousemoved(x, y, dx, dy)
-    light.x = x
-    --light.y = y
+    lights[lightIndex].x = x
+    lights[lightIndex].y = y
+    lights[lightIndex].cam:lookAt(x, y)
 end
