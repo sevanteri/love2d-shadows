@@ -4,6 +4,7 @@ local shadowMapShader = require('shadowMapShader')
 local lightShader = require('lightShader')
 
 local lightIndex = 1
+local pressing = false
 local lights = {
     {
         x = 256,
@@ -96,21 +97,43 @@ function love.draw(dt)
     --lights[lightIndex].cam:draw(function() g.draw(objectCanvas) end)
 end
 
-isDown = love.keyboard.isDown
-function love.update(dt)
-    if isDown('1') then
+function love.keyreleased(key)
+    if key == "escape" then
+        love.event.quit()
+    end
+
+    if key == '1' then
         lightIndex = 1
-    elseif isDown('2') then
+    elseif key == '2' then
         lightIndex = 2
     end
 
-    if isDown('escape') then
-        love.event.push('quit')
-    end
+    --if key == '+' then
+        --lights[lightIndex].size = lights[lightIndex].size + 1
+    --elseif key == '-' then
+        --lights[lightIndex].size = lights[lightIndex].size - 1
+    --end
 end
 
 function love.mousemoved(x, y, dx, dy)
-    lights[lightIndex].x = x
-    lights[lightIndex].y = y
-    lights[lightIndex].cam:lookAt(x, y)
+    if pressing then
+        lights[lightIndex].x = x
+        lights[lightIndex].y = y
+        lights[lightIndex].cam:lookAt(x, y)
+    end
+end
+
+function love.mousepressed(x, y, b)
+    if b then
+        pressing = true
+        lights[lightIndex].x = x
+        lights[lightIndex].y = y
+        lights[lightIndex].cam:lookAt(x, y)
+    end
+end
+
+function love.mousereleased(x, y, b)
+    if b then
+        pressing = false
+    end
 end
