@@ -3,11 +3,11 @@ local light = require('light')
 local lightIndex = 1
 local pressing = false
 local lights = {
-    light(256, 256, 256, {255,255,255}),
-    light(200, 256, 215, {0,0,255,200}),
-    light(0, 0, 400, {255,255,0, 200}),
-    light(800, 0, 500, {200,0,200,200}),
-    light(0, 600, 300, {0, 200, 200, 200})
+    light(256,  256,  256,  {255,  255,  200,  200}),
+    light(200,  256,  215,  {0,    0,    255,  200}),
+    light(0,    0,    400,  {255,  255,  0,    200}),
+    light(800,  0,    500,  {200,  0,    200,  200}),
+    light(0,    600,  300,  {0,    200,  200,  200})
 }
 
 local g = love.graphics
@@ -49,6 +49,9 @@ function love.draw(dt)
     g.setColor(50,50,50)
     g.draw(objectCanvas)
 
+    --g.setColor(255, 255, 255)
+    --g.draw(lights[lightIndex].shadowMapCanvas, 0, 5)
+
     --g.push()
     --g.scale(
         --objectCanvas:getWidth() / lights[lightIndex].size,
@@ -76,18 +79,14 @@ end
 
 function love.mousemoved(x, y, dx, dy)
     if pressing then
-        local l = lights[lightIndex]
-        l.x = x
-        l.y = y
+        lights[lightIndex]:update(x, y)
     end
 end
 
 function love.mousepressed(x, y, b)
     if b then
         pressing = true
-        local l = lights[lightIndex]
-        l.x = x
-        l.y = y
+        lights[lightIndex]:update(x, y)
     end
 end
 

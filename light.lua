@@ -31,7 +31,8 @@ function light:update(x, y)
 end
 
 function light:drawOcclusionCanvas(objCanvas)
-    self.occlusionCanvas:clear()
+    self.occlusionCanvas:clear(0,0,0,0)
+    love.graphics.setColor(0,0,0,255)
     self.occlusionCanvas:renderTo(function()
         local obcWidth = objCanvas:getWidth()
         local obcHeight = objCanvas:getHeight()
