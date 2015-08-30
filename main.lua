@@ -1,29 +1,20 @@
-local camera = require('libs.hump.camera')
-
-local shadowMapShader = require('shadowMapShader')
-local lightShader = require('lightShader')
+local light = require('light')
 
 local lightIndex = 1
 local pressing = false
 local lights = {
-    {
-        x = 256,
-        y = 256,
-        size = 512,
-        color = {255, 255, 255, 255}
-    },
-    {
-        x = 400,
-        y = 256,
-        size = 256,
-        color = {255, 0, 0, 200}
-    }
+    light(256, 256, 256, {255,255,255}),
+    light(400, 300, 256, {255,0,0,150}),
+    light(200, 256, 215, {0,0,255,200})
+    --light(200, 256, 256, {0,255,0,200}),
+    --light(200, 256, 256, {10,10,10,200}),
+    --light(200, 256, 256, {0,255,255,200})
 }
 
 local g = love.graphics
 
 function love.load()
-    love.window.setMode(512, 512)
+    love.window.setMode(600, 600)
     Wwidth, Wheight = love.window.getDimensions()
     Xcenter, Ycenter = Wwidth/2, Wheight/2
     g.setBackgroundColor(200, 200, 200)
@@ -36,65 +27,26 @@ function love.load()
         g.rectangle('fill', Xcenter - 50, Ycenter + 50, 50, 50)
     end)
 
-    -- setup lights
-    for _, l in ipairs(lights) do
-        l.cam = camera.new(l.x, l.y, Wwidth / l.size)
-        l.occlusionCanvas = g.newCanvas(l.size, l.size, g.rgba8)
-        l.shadowMapCanvas = g.newCanvas(l.size, 1, g.rgba8)
-        l.shadowMapCanvas:setFilter('linear', 'linear')
-        l.shadowMapCanvas:setWrap('repeat', 'repeat')
-    end
-
 end
 
 function love.draw(dt)
     for i, l in ipairs(lights) do
-        l.occlusionCanvas:clear()
-        l.occlusionCanvas:renderTo(function()
-            l.cam:draw(function()
-                local xr = l.occlusionCanvas:getWidth() / objectCanvas:getWidth()
-                local yr = l.occlusionCanvas:getHeight() / objectCanvas:getHeight()
-                g.draw(
-                    objectCanvas,
-                    (1 - xr) * (l.x - l.size/2),
-                    (1 - yr) * (l.y - l.size/2),
-                    0,
-                    xr,
-                    yr
-                )
-            end)
-        end)
-
-        l.shadowMapCanvas:clear()
-        l.shadowMapCanvas:renderTo(function()
-            g.setShader(shadowMapShader)
-            shadowMapShader:send('resolution', {l.size, l.size})
-            g.draw(l.occlusionCanvas)
-            g.setShader()
-        end)
-        g.setColor(255,255,255)
-        g.draw(l.shadowMapCanvas, 0, 5 + i)
-
-        g.setShader(lightShader)
-        lightShader:send('resolution', {l.size, l.size})
-        g.setColor(l.color)
-        g.draw(
-            l.shadowMapCanvas,
-            l.x,
-            l.y,
-            0, --rot
-            1,
-            -l.size,
-            l.size/2,
-            0.5
-        )
-        g.setShader()
-
+        l:drawShadows(objectCanvas)
     end
     g.setColor(50,50,50)
     g.draw(objectCanvas)
 
-    --lights[lightIndex].cam:draw(function() g.draw(objectCanvas) end)
+    --g.push()
+    --g.scale(
+        --objectCanvas:getWidth() / lights[lightIndex].size,
+        --objectCanvas:getHeight() / lights[lightIndex].size
+    --)
+    --g.translate(
+        ---(lights[lightIndex].x - lights[lightIndex].size/2),
+        ---(lights[lightIndex].y - lights[lightIndex].size/2)
+    --)
+    --g.draw(objectCanvas)
+    --g.pop()
 end
 
 function love.keyreleased(key)
@@ -102,10 +54,10 @@ function love.keyreleased(key)
         love.event.quit()
     end
 
-    if key == '1' then
-        lightIndex = 1
-    elseif key == '2' then
-        lightIndex = 2
+    if key == '1' and lightIndex > 1 then
+        lightIndex = lightIndex - 1
+    elseif key == '2' and lightIndex < #lights then
+        lightIndex = lightIndex + 1
     end
 
     --if key == '+' then
@@ -119,7 +71,6 @@ function love.mousemoved(x, y, dx, dy)
     if pressing then
         lights[lightIndex].x = x
         lights[lightIndex].y = y
-        lights[lightIndex].cam:lookAt(x, y)
     end
 end
 
@@ -128,7 +79,6 @@ function love.mousepressed(x, y, b)
         pressing = true
         lights[lightIndex].x = x
         lights[lightIndex].y = y
-        lights[lightIndex].cam:lookAt(x, y)
     end
 end
 
