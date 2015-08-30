@@ -1,8 +1,8 @@
-local shadowMapShader = require('shadowMapShader')
-local lightShader = require('lightShader')
-
 local light = {}
 light.__index = light
+
+local shadowMapShader = require('shadowMapShader')
+local lightShader = require('lightShader')
 
 local g = love.graphics
 
@@ -33,22 +33,22 @@ end
 function light:drawOcclusionCanvas(objCanvas)
     self.occlusionCanvas:clear()
     self.occlusionCanvas:renderTo(function()
-        g.push()
-        g.scale(
-            objCanvas:getWidth() / self.size,
-            objCanvas:getHeight() / self.size
-        )
-        g.translate(
-            -(self.x - self.size/2),
-            -(self.y - self.size/2)
-        )
+        local obcWidth = objCanvas:getWidth()
+        local obcHeight = objCanvas:getHeight()
 
-        local xr = self.occlusionCanvas:getWidth() / objCanvas:getWidth()
-        local yr = self.occlusionCanvas:getHeight() / objCanvas:getHeight()
+        local cx = self.x - self.size/2
+        local cy = self.y - self.size/2
+
+        g.push()
+        g.scale(obcWidth / self.size, obcHeight / self.size)
+        g.translate(-cx, -cy)
+
+        local xr = self.occlusionCanvas:getWidth() / obcWidth
+        local yr = self.occlusionCanvas:getHeight() / obcHeight
         love.graphics.draw(
             objCanvas,
-            (1 - xr) * (self.x - self.size/2),
-            (1 - yr) * (self.y - self.size/2),
+            (1 - xr) * cx,
+            (1 - yr) * cy,
             0,
             xr,
             yr
@@ -91,4 +91,4 @@ function light:drawShadows(objCanvas)
     self:drawLight(self.shadowMapCanvas)
 end
 
-return setmetatable({new = new}, {__call = function(_, ...) return new(...) end})
+return setmetatable({}, {__call = function(_, ...) return new(...) end})

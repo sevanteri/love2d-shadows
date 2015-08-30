@@ -14,7 +14,7 @@ local lights = {
 local g = love.graphics
 
 function love.load()
-    love.window.setMode(600, 600)
+    love.window.setMode(800, 600)
     Wwidth, Wheight = love.window.getDimensions()
     Xcenter, Ycenter = Wwidth/2, Wheight/2
     g.setBackgroundColor(200, 200, 200)
@@ -30,8 +30,8 @@ function love.load()
 end
 
 function love.draw(dt)
-    for i, l in ipairs(lights) do
-        l:drawShadows(objectCanvas)
+    for i=1,#lights do
+        lights[i]:drawShadows(objectCanvas)
     end
     g.setColor(50,50,50)
     g.draw(objectCanvas)
@@ -59,26 +59,22 @@ function love.keyreleased(key)
     elseif key == '2' and lightIndex < #lights then
         lightIndex = lightIndex + 1
     end
-
-    --if key == '+' then
-        --lights[lightIndex].size = lights[lightIndex].size + 1
-    --elseif key == '-' then
-        --lights[lightIndex].size = lights[lightIndex].size - 1
-    --end
 end
 
 function love.mousemoved(x, y, dx, dy)
     if pressing then
-        lights[lightIndex].x = x
-        lights[lightIndex].y = y
+        local l = lights[lightIndex]
+        l.x = x
+        l.y = y
     end
 end
 
 function love.mousepressed(x, y, b)
     if b then
         pressing = true
-        lights[lightIndex].x = x
-        lights[lightIndex].y = y
+        local l = lights[lightIndex]
+        l.x = x
+        l.y = y
     end
 end
 
