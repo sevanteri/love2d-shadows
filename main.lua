@@ -3,7 +3,7 @@ local light = require('light')
 local lightIndex = 1
 local pressing = false
 local lights = {
-    light(256,  256,  256,  {255,  255,  200,  200}),
+    light(256,  256,  256,  {255,  255,  255,  200}),
     light(200,  256,  215,  {0,    0,    255,  200}),
     light(0,    0,    400,  {255,  255,  0,    200}),
     light(800,  0,    500,  {200,  0,    200,  200}),
@@ -14,9 +14,9 @@ local g = love.graphics
 
 function love.load()
     love.window.setMode(800, 600)
-    Wwidth, Wheight = love.window.getDimensions()
+    Wwidth, Wheight = g.getDimensions()
     Xcenter, Ycenter = Wwidth/2, Wheight/2
-    g.setBackgroundColor(100, 100, 100)
+    g.setBackgroundColor(50, 50, 50)
 
     objectCanvas = g.newCanvas(Wwidth, Wheight)
     objectCanvas:renderTo(function()
@@ -46,7 +46,7 @@ function love.draw(dt)
     for i=1,#lights do
         lights[i]:drawShadows(objectCanvas)
     end
-    g.setColor(50,50,50)
+    g.setColor(0, 0, 0)
     g.draw(objectCanvas)
 
     --g.setColor(255, 255, 255)
