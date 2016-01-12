@@ -31,9 +31,9 @@ function light:update(x, y)
 end
 
 function light:drawOcclusionCanvas(objCanvas)
-    self.occlusionCanvas:clear(0,0,0,0)
     love.graphics.setColor(0,0,0,255)
     self.occlusionCanvas:renderTo(function()
+        g.clear(0,0,0,0)
         local obcWidth = objCanvas:getWidth()
         local obcHeight = objCanvas:getHeight()
 
@@ -60,8 +60,8 @@ function light:drawOcclusionCanvas(objCanvas)
 end
 
 function light:drawShadowMapCanvas(occCanvas)
-    self.shadowMapCanvas:clear()
     self.shadowMapCanvas:renderTo(function()
+        g.clear(0,0,0,0)
         g.setShader(shadowMapShader)
         shadowMapShader:send('resolution', {self.size, self.size})
         g.draw(self.occlusionCanvas)
